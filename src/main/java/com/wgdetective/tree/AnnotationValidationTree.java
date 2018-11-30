@@ -32,7 +32,8 @@ public class AnnotationValidationTree<T> {
 
     public void clearUnnecessaryLeafs() {
         for (final Field field : new ArrayList<>(leafs.keySet())) {
-            if (!leafs.get(field).hasLeafs()) {
+            final AnnotationValidationTree leafTree = leafs.get(field);
+            if (!leafTree.hasLeafs() && leafTree.getValidatedFields().isEmpty()) {
                 leafs.remove(field);
             }
         }

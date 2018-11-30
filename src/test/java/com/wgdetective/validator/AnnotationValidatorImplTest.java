@@ -3,7 +3,9 @@ package com.wgdetective.validator;
 import com.wgdetective.factory.AnnotationValidatorFactory;
 import com.wgdetective.test.filter.MyPackageFilter;
 import com.wgdetective.test.model.LeafModel;
+import com.wgdetective.test.model.LeafModel2;
 import com.wgdetective.test.model.RootModel;
+import com.wgdetective.test.model.RootModel2;
 import com.wgdetective.test.processor.NotNullAnnotationProcessor;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,11 +21,13 @@ import static org.junit.Assert.assertTrue;
  */
 public class AnnotationValidatorImplTest {
     private AnnotationValidator<RootModel> annotationValidator;
+    private AnnotationValidator<RootModel2> root2annotationValidator;
 
     @Before
     public void init() {
         final AnnotationValidatorFactory factory = new AnnotationValidatorFactory();
         annotationValidator = factory.create(RootModel.class, new NotNullAnnotationProcessor(), new MyPackageFilter());
+        root2annotationValidator = factory.create(RootModel2.class, new NotNullAnnotationProcessor(), new MyPackageFilter());
     }
 
     @Test
@@ -148,6 +152,22 @@ public class AnnotationValidatorImplTest {
         root.setLeafs(leafs);
 
         assertTrue(annotationValidator.validate(root));
+    }
+
+    @Test
+    public void cleanLeafsTrueTest() {
+        final RootModel2 rootModel2 = new RootModel2();
+        rootModel2.setId(1L);
+        rootModel2.setLeaf(new LeafModel2(1L));
+        assertTrue(root2annotationValidator.validate(rootModel2));
+    }
+
+    @Test
+    public void cleanLeafsTrueFalse() {
+        final RootModel2 rootModel2 = new RootModel2();
+        rootModel2.setId(1L);
+        rootModel2.setLeaf(new LeafModel2(null));
+        assertFalse(root2annotationValidator.validate(rootModel2));
     }
 
     //list + sub + circle
