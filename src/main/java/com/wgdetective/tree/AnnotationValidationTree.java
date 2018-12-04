@@ -24,9 +24,8 @@ public class AnnotationValidationTree<T> {
     }
 
     public void addForValidation(final Field field,
-                                 final Class<? extends Annotation> annotationClass,
                                  final Annotation annotation) {
-        validatedFields.add(new FieldInfo(field, annotationClass, annotation));
+        validatedFields.add(new FieldInfo(field, annotation));
     }
 
     public void add(final Field field, final AnnotationValidationTree<?> tree) {

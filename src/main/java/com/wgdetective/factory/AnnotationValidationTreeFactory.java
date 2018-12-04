@@ -55,7 +55,7 @@ public class AnnotationValidationTreeFactory {
             if (field.isAnnotationPresent(annotationClass)) {
                 final Annotation annotation = field.getAnnotation(annotationClass);
                 if (annotationProcessor.filter(annotation)) {
-                    tree.addForValidation(field, annotationClass, annotation);
+                    tree.addForValidation(field, annotation);
                 }
             }
         }

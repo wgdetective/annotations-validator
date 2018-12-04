@@ -37,7 +37,8 @@ public class AnnotationValidatorImpl<T> implements AnnotationValidator<T> {
         if (!validatedObjects.containsKey(o)) {
             validatedObjects.put(o, true);
             for (final FieldInfo fieldInfo : tree.getValidatedFields()) {
-                final AnnotationProcessor processor = annotationProcessors.get(fieldInfo.getAnnotationClass());
+                final AnnotationProcessor processor =
+                    annotationProcessors.get(fieldInfo.getAnnotation().annotationType());
                 processor.validate(fieldInfo.getAnnotation(), getField(o, fieldInfo.getField()));
             }
             for (final Map.Entry<Field, AnnotationValidationTree> e : tree.getLeafs().entrySet()) {
