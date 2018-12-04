@@ -16,8 +16,8 @@ public class AnnotationValidatorFactoryTest {
     @Test
     public void test() {
         final AnnotationValidator annotationValidator =
-            new AnnotationValidatorFactory().create(RootModel.class, new NotNullAnnotationProcessor(),
-                                                    new MyPackageFilter());
+            new AnnotationValidatorFactory()
+                .create(RootModel.class, new NotNullAnnotationProcessor(), new MyPackageFilter());
         assertNotNull(annotationValidator);
     }
 

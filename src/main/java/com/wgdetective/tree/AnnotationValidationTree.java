@@ -13,18 +13,20 @@ import java.util.Map;
 public class AnnotationValidationTree<T> {
     private Class<T> clazz;
 
-    private final Map<Field, Annotation> validatedFields;
+    private final List<FieldInfo> validatedFields;
     private final Map<Field, AnnotationValidationTree> leafs;
 
     public AnnotationValidationTree(final Class<T> clazz) {
         this.clazz = clazz;
-        this.validatedFields = new HashMap<>();
+        this.validatedFields = new ArrayList<>();
         this.leafs = new HashMap<>();
 
     }
 
-    public void addForValidation(final Field field, final Annotation annotation) {
-        validatedFields.put(field, annotation);
+    public void addForValidation(final Field field,
+                                 final Class<? extends Annotation> annotationClass,
+                                 final Annotation annotation) {
+        validatedFields.add(new FieldInfo(field, annotationClass, annotation));
     }
 
     public void add(final Field field, final AnnotationValidationTree<?> tree) {
@@ -48,11 +50,12 @@ public class AnnotationValidationTree<T> {
         return clazz;
     }
 
-    public Map<Field, Annotation> getValidatedFields() {
+    public List<FieldInfo> getValidatedFields() {
         return validatedFields;
     }
 
     public Map<Field, AnnotationValidationTree> getLeafs() {
         return leafs;
     }
+
 }

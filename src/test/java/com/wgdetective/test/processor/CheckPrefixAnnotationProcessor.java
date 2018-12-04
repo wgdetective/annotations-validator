@@ -21,7 +21,7 @@ public class CheckPrefixAnnotationProcessor implements AnnotationProcessor<Check
     @Override
     public void validate(final CheckPrefix annotation, final Object o) throws AnnotationValidateException {
         if (!((String) o).startsWith(annotation.prefix())) {
-            throw new AnnotationValidateException();
+            throw new AnnotationValidateException("Expected prefix was " + annotation.prefix());
         }
     }
 }

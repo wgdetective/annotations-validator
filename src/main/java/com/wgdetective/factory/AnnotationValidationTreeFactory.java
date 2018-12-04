@@ -1,14 +1,16 @@
 package com.wgdetective.factory;
 
-import com.wgdetective.processor.AnnotationProcessor;
 import com.wgdetective.filter.PackageFilter;
+import com.wgdetective.processor.AnnotationProcessor;
 import com.wgdetective.tree.AnnotationValidationTree;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -16,36 +18,45 @@ import java.util.Map;
  */
 public class AnnotationValidationTreeFactory {
 
-    public <A extends Annotation, T> AnnotationValidationTree<T> create(final Class<T> clazz,
-                                                                     final AnnotationProcessor<A> annotationProcessor,
-                                                                     final PackageFilter packageFilter) {
-        return create(clazz, annotationProcessor, packageFilter, new HashMap<>());
+    public <T> AnnotationValidationTree<T> create(final Class<T> clazz,
+                                                  final AnnotationProcessor annotationProcessor,
+                                                  final PackageFilter packageFilter) {
+        return create(clazz, Collections.singletonList(annotationProcessor), packageFilter, new HashMap<>());
+    }
+
+    public <T> AnnotationValidationTree<T> create(final Class<T> clazz,
+                                                  final List<AnnotationProcessor> annotationProcessors,
+                                                  final PackageFilter packageFilter) {
+        return create(clazz, annotationProcessors, packageFilter, new HashMap<>());
     }
 
     public <A extends Annotation, T> AnnotationValidationTree<T> create(final Class<T> clazz,
-                                                                     final AnnotationProcessor<A> annotationProcessor,
-                                                                     final PackageFilter packageFilter,
-                                                                     final Map<Class<?>, AnnotationValidationTree<?>> proceedClasses) {
+                                                                        final List<AnnotationProcessor> annotationProcessors,
+                                                                        final PackageFilter packageFilter,
+                                                                        final Map<Class<?>, AnnotationValidationTree<?>> proceedClasses) {
         if (!proceedClasses.containsKey(clazz)) {
             final AnnotationValidationTree<T> tree = new AnnotationValidationTree<>(clazz);
             proceedClasses.put(clazz, tree);
             for (final Field field : clazz.getDeclaredFields()) {
-                checkAnnotation(annotationProcessor, tree, field);
+                checkAnnotations(annotationProcessors, tree, field);
                 final Class<?> fieldClazz = getFieldClass(field);
-                processNext(annotationProcessor, packageFilter, tree, field, fieldClazz, proceedClasses);
+                processNext(annotationProcessors, packageFilter, tree, field, fieldClazz, proceedClasses);
             }
             tree.clearUnnecessaryLeafs();
         }
         return (AnnotationValidationTree<T>) proceedClasses.get(clazz);
     }
 
-    private <A extends Annotation, T> void checkAnnotation(final AnnotationProcessor<A> annotationProcessor,
-                                                           final AnnotationValidationTree<T> tree,
-                                                           final Field field) {
-        if (field.isAnnotationPresent(annotationProcessor.getAnnotation())) {
-            final A annotation = field.getAnnotation(annotationProcessor.getAnnotation());
-            if (annotationProcessor.filter(annotation)) {
-                tree.addForValidation(field, annotation);
+    private <T> void checkAnnotations(final List<AnnotationProcessor> annotationProcessors,
+                                      final AnnotationValidationTree<T> tree,
+                                      final Field field) {
+        for (AnnotationProcessor annotationProcessor : annotationProcessors) {
+            final Class annotationClass = annotationProcessor.getAnnotation();
+            if (field.isAnnotationPresent(annotationClass)) {
+                final Annotation annotation = field.getAnnotation(annotationClass);
+                if (annotationProcessor.filter(annotation)) {
+                    tree.addForValidation(field, annotationClass, annotation);
+                }
             }
         }
     }
@@ -63,14 +74,14 @@ public class AnnotationValidationTreeFactory {
         return fieldClazz;
     }
 
-    private <A extends Annotation, T> void processNext(final AnnotationProcessor<A> annotationProcessor,
+    private <A extends Annotation, T> void processNext(final List<AnnotationProcessor> annotationProcessors,
                                                        final PackageFilter packageFilter,
                                                        final AnnotationValidationTree<?> tree,
                                                        final Field field,
                                                        final Class<T> fieldClazz,
                                                        final Map<Class<?>, AnnotationValidationTree<?>> proceedClasses) {
         if (fieldClazz != null && packageFilter.filter(fieldClazz.getPackage().getName())) {
-            tree.add(field, create(fieldClazz, annotationProcessor, packageFilter, proceedClasses));
+            tree.add(field, create(fieldClazz, annotationProcessors, packageFilter, proceedClasses));
         }
     }
 }

@@ -3,6 +3,7 @@ package com.wgdetective.validator;
 import com.wgdetective.exception.AnnotationValidateException;
 import com.wgdetective.processor.AnnotationProcessor;
 import com.wgdetective.tree.AnnotationValidationTree;
+import com.wgdetective.tree.FieldInfo;
 import org.springframework.util.ReflectionUtils;
 
 import java.lang.annotation.Annotation;
@@ -14,14 +15,15 @@ import java.util.Map;
 /**
  * @author Wladimir Litvinov
  */
-public class AnnotationValidatorImpl<A extends Annotation, T> implements AnnotationValidator<T> {
+public class AnnotationValidatorImpl<T> implements AnnotationValidator<T> {
+
     private AnnotationValidationTree<T> tree;
-    private AnnotationProcessor<A> annotationProcessor;
+    private Map<Class<Annotation>, AnnotationProcessor> annotationProcessors;
 
     public AnnotationValidatorImpl(final AnnotationValidationTree<T> tree,
-                                   final AnnotationProcessor<A> annotationProcessor) {
+                                   final Map<Class<Annotation>, AnnotationProcessor> annotationProcessors) {
         this.tree = tree;
-        this.annotationProcessor = annotationProcessor;
+        this.annotationProcessors = annotationProcessors;
     }
 
     @Override
@@ -34,8 +36,9 @@ public class AnnotationValidatorImpl<A extends Annotation, T> implements Annotat
                               final Map<Object, Boolean> validatedObjects) throws AnnotationValidateException {
         if (!validatedObjects.containsKey(o)) {
             validatedObjects.put(o, true);
-            for (final Map.Entry<Field, Annotation> e : tree.getValidatedFields().entrySet()) {
-                annotationProcessor.validate((A) e.getValue(), getField(o, e.getKey()));
+            for (final FieldInfo fieldInfo : tree.getValidatedFields()) {
+                final AnnotationProcessor processor = annotationProcessors.get(fieldInfo.getAnnotationClass());
+                processor.validate(fieldInfo.getAnnotation(), getField(o, fieldInfo.getField()));
             }
             for (final Map.Entry<Field, AnnotationValidationTree> e : tree.getLeafs().entrySet()) {
                 final Field field = e.getKey();

@@ -2,6 +2,7 @@ package com.wgdetective.validator;
 
 import com.wgdetective.exception.AnnotationValidateException;
 import com.wgdetective.factory.AnnotationValidatorFactory;
+import com.wgdetective.processor.AnnotationProcessor;
 import com.wgdetective.test.filter.MyPackageFilter;
 import com.wgdetective.test.model.LeafModel;
 import com.wgdetective.test.model.LeafModel2;
@@ -23,14 +24,23 @@ public class AnnotationValidatorImplTest {
     private AnnotationValidator<RootModel2> root2annotationValidator;
     private AnnotationValidator<RootModel> prefixAnnotationValidator;
 
+    private AnnotationValidator<RootModel> multiAnnotationValidator;
+
     @Before
     public void init() {
         final AnnotationValidatorFactory factory = new AnnotationValidatorFactory();
         final MyPackageFilter packageFilter = new MyPackageFilter();
-        annotationValidator = factory.create(RootModel.class, new NotNullAnnotationProcessor(), packageFilter);
-        root2annotationValidator = factory.create(RootModel2.class, new NotNullAnnotationProcessor(), packageFilter);
-        prefixAnnotationValidator =
-            factory.create(RootModel.class, new CheckPrefixAnnotationProcessor(), packageFilter);
+        final NotNullAnnotationProcessor notNullAnnotationProcessor = new NotNullAnnotationProcessor();
+        final CheckPrefixAnnotationProcessor prefixAnnotationProcessor = new CheckPrefixAnnotationProcessor();
+
+        annotationValidator = factory.create(RootModel.class, notNullAnnotationProcessor, packageFilter);
+        root2annotationValidator = factory.create(RootModel2.class, notNullAnnotationProcessor, packageFilter);
+        prefixAnnotationValidator = factory.create(RootModel.class, prefixAnnotationProcessor, packageFilter);
+
+        final List<AnnotationProcessor> processors = new ArrayList<>();
+        processors.add(notNullAnnotationProcessor);
+        processors.add(prefixAnnotationProcessor);
+        multiAnnotationValidator = factory.create(RootModel.class, processors, packageFilter);
     }
 
     @Test
@@ -184,6 +194,26 @@ public class AnnotationValidatorImplTest {
     public void checkPrefixFalseTest() throws Exception {
         final RootModel root = createRoot();
         prefixAnnotationValidator.validate(root);
+    }
+
+    @Test
+    public void multiTrueTest() throws Exception {
+        final RootModel root = createRoot();
+        root.setName("pref_" + root.getName());
+        multiAnnotationValidator.validate(root);
+    }
+
+    @Test(expected = AnnotationValidateException.class)
+    public void multiFalse1Test() throws Exception {
+        final RootModel root = createRoot();
+        multiAnnotationValidator.validate(root);
+    }
+
+    @Test(expected = AnnotationValidateException.class)
+    public void multiFalse2Test() throws Exception {
+        final RootModel root = createRoot();
+        root.setId(null);
+        multiAnnotationValidator.validate(root);
     }
 
     private RootModel createRoot() {
