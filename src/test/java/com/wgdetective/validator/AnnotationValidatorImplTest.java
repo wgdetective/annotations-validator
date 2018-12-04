@@ -1,5 +1,6 @@
 package com.wgdetective.validator;
 
+import com.wgdetective.exception.AnnotationValidateException;
 import com.wgdetective.factory.AnnotationValidatorFactory;
 import com.wgdetective.test.filter.MyPackageFilter;
 import com.wgdetective.test.model.LeafModel;
@@ -13,9 +14,6 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author Wladimir Litvinov
@@ -39,15 +37,15 @@ public class AnnotationValidatorImplTest {
     public void simpleTrue() throws Exception {
         final RootModel root = createRoot();
 
-        assertTrue(annotationValidator.validate(root));
+        annotationValidator.validate(root);
     }
 
-    @Test
+    @Test(expected = AnnotationValidateException.class)
     public void simpleFalse() throws Exception {
         final RootModel root = new RootModel();
         root.setName("root");
 
-        assertFalse(annotationValidator.validate(root));
+        annotationValidator.validate(root);
     }
 
     @Test
@@ -56,16 +54,16 @@ public class AnnotationValidatorImplTest {
         final LeafModel leaf = new LeafModel(1L);
         root.setLeaf(leaf);
 
-        assertTrue(annotationValidator.validate(root));
+        annotationValidator.validate(root);
     }
 
-    @Test
+    @Test(expected = AnnotationValidateException.class)
     public void leafFalse() throws Exception {
         final RootModel root = createRoot();
         final LeafModel leaf = new LeafModel();
         root.setLeaf(leaf);
 
-        assertFalse(annotationValidator.validate(root));
+        annotationValidator.validate(root);
     }
 
     @Test
@@ -76,10 +74,10 @@ public class AnnotationValidatorImplTest {
         final LeafModel subLeaf = new LeafModel(2L);
         leaf.setSubLeaf(subLeaf);
 
-        assertTrue(annotationValidator.validate(root));
+        annotationValidator.validate(root);
     }
 
-    @Test
+    @Test(expected = AnnotationValidateException.class)
     public void subLeafFalse() throws Exception {
         final RootModel root = createRoot();
         final LeafModel leaf = new LeafModel(1L);
@@ -87,7 +85,7 @@ public class AnnotationValidatorImplTest {
         final LeafModel subLeaf = new LeafModel();
         leaf.setSubLeaf(subLeaf);
 
-        assertFalse(annotationValidator.validate(root));
+        annotationValidator.validate(root);
     }
 
     @Test
@@ -97,10 +95,10 @@ public class AnnotationValidatorImplTest {
         leafs.add(new LeafModel(1L));
         root.setLeafs(leafs);
 
-        assertTrue(annotationValidator.validate(root));
+        annotationValidator.validate(root);
     }
 
-    @Test
+    @Test(expected = AnnotationValidateException.class)
     public void collectionLeafFalse() throws Exception {
         final RootModel root = createRoot();
         final List<LeafModel> leafs = new ArrayList<>();
@@ -108,7 +106,7 @@ public class AnnotationValidatorImplTest {
         leafs.add(new LeafModel());
         root.setLeafs(leafs);
 
-        assertFalse(annotationValidator.validate(root));
+        annotationValidator.validate(root);
     }
 
     @Test
@@ -118,7 +116,7 @@ public class AnnotationValidatorImplTest {
         root.setLeaf(leaf);
         leaf.setSubLeaf(leaf);
 
-        assertTrue(annotationValidator.validate(root));
+        annotationValidator.validate(root);
     }
 
     @Test
@@ -130,10 +128,10 @@ public class AnnotationValidatorImplTest {
         leafs.add(leaf);
         root.setLeafs(leafs);
 
-        assertTrue(annotationValidator.validate(root));
+        annotationValidator.validate(root);
     }
 
-    @Test
+    @Test(expected = AnnotationValidateException.class)
     public void collectionSubLeafFalse() throws Exception {
         final RootModel root = createRoot();
         final List<LeafModel> leafs = new ArrayList<>();
@@ -142,7 +140,7 @@ public class AnnotationValidatorImplTest {
         leafs.add(leaf);
         root.setLeafs(leafs);
 
-        assertFalse(annotationValidator.validate(root));
+        annotationValidator.validate(root);
     }
 
     @Test
@@ -156,36 +154,36 @@ public class AnnotationValidatorImplTest {
         leafs.add(leaf);
         root.setLeafs(leafs);
 
-        assertTrue(annotationValidator.validate(root));
+        annotationValidator.validate(root);
     }
 
     @Test
-    public void cleanLeafsTrueTest() {
+    public void cleanLeafsTrueTest() throws Exception {
         final RootModel2 rootModel2 = new RootModel2();
         rootModel2.setId(1L);
         rootModel2.setLeaf(new LeafModel2(1L));
-        assertTrue(root2annotationValidator.validate(rootModel2));
+        root2annotationValidator.validate(rootModel2);
     }
 
-    @Test
-    public void cleanLeafsFalseTest() {
+    @Test(expected = AnnotationValidateException.class)
+    public void cleanLeafsFalseTest() throws Exception {
         final RootModel2 rootModel2 = new RootModel2();
         rootModel2.setId(1L);
         rootModel2.setLeaf(new LeafModel2(null));
-        assertFalse(root2annotationValidator.validate(rootModel2));
+        root2annotationValidator.validate(rootModel2);
     }
 
     @Test
-    public void checkPrefixTrueTest() {
+    public void checkPrefixTrueTest() throws Exception {
         final RootModel root = createRoot();
         root.setName("pref_" + root.getName());
-        assertTrue(prefixAnnotationValidator.validate(root));
+        prefixAnnotationValidator.validate(root);
     }
 
-    @Test
-    public void checkPrefixFalseest() {
+    @Test(expected = AnnotationValidateException.class)
+    public void checkPrefixFalseTest() throws Exception {
         final RootModel root = createRoot();
-        assertFalse(prefixAnnotationValidator.validate(root));
+        prefixAnnotationValidator.validate(root);
     }
 
     private RootModel createRoot() {

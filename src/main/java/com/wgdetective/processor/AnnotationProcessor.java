@@ -1,5 +1,7 @@
 package com.wgdetective.processor;
 
+import com.wgdetective.exception.AnnotationValidateException;
+
 import java.lang.annotation.Annotation;
 
 /**
@@ -8,5 +10,6 @@ import java.lang.annotation.Annotation;
 public interface AnnotationProcessor<A extends Annotation> {
     Class<A> getAnnotation();
     boolean filter(final A annotation);
-    boolean validate(final A annotation, final Object o);
+
+    void validate(final A annotation, final Object o) throws AnnotationValidateException;
 }

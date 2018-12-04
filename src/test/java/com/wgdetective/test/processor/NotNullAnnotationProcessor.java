@@ -1,9 +1,8 @@
 package com.wgdetective.test.processor;
 
+import com.wgdetective.exception.AnnotationValidateException;
 import com.wgdetective.processor.AnnotationProcessor;
 import com.wgdetective.test.model.NotNull;
-
-import java.lang.annotation.Annotation;
 
 /**
  * @author Wladimir Litvinov
@@ -20,7 +19,9 @@ public class NotNullAnnotationProcessor implements AnnotationProcessor<NotNull> 
     }
 
     @Override
-    public boolean validate(final NotNull a, final Object o) {
-        return o != null;
+    public void validate(final NotNull a, final Object o) throws AnnotationValidateException {
+        if (o == null) {
+            throw new AnnotationValidateException();
+        }
     }
 }

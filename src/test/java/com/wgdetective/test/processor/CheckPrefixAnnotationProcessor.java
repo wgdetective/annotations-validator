@@ -1,5 +1,6 @@
 package com.wgdetective.test.processor;
 
+import com.wgdetective.exception.AnnotationValidateException;
 import com.wgdetective.processor.AnnotationProcessor;
 import com.wgdetective.test.model.CheckPrefix;
 
@@ -18,7 +19,9 @@ public class CheckPrefixAnnotationProcessor implements AnnotationProcessor<Check
     }
 
     @Override
-    public boolean validate(final CheckPrefix annotation, final Object o) {
-        return ((String) o).startsWith(annotation.prefix());
+    public void validate(final CheckPrefix annotation, final Object o) throws AnnotationValidateException {
+        if (!((String) o).startsWith(annotation.prefix())) {
+            throw new AnnotationValidateException();
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.wgdetective.validator;
 
+import com.wgdetective.exception.AnnotationValidateException;
 import com.wgdetective.processor.AnnotationProcessor;
 import com.wgdetective.tree.AnnotationValidationTree;
 import org.springframework.util.ReflectionUtils;
@@ -24,41 +25,30 @@ public class AnnotationValidatorImpl<A extends Annotation, T> implements Annotat
     }
 
     @Override
-    public boolean validate(final T o) {
-        return validateLeaf(o, tree, new HashMap<>());
+    public void validate(final T o) throws AnnotationValidateException {
+        validateLeaf(o, tree, new HashMap<>());
     }
 
-    private boolean validateLeaf(final Object o,
-                                 final AnnotationValidationTree<?> tree,
-                                 final Map<Object, Boolean> validatedObjects) {
+    private void validateLeaf(final Object o,
+                              final AnnotationValidationTree<?> tree,
+                              final Map<Object, Boolean> validatedObjects) throws AnnotationValidateException {
         if (!validatedObjects.containsKey(o)) {
             validatedObjects.put(o, true);
             for (final Map.Entry<Field, Annotation> e : tree.getValidatedFields().entrySet()) {
-                if (!annotationProcessor.validate((A) e.getValue(), getField(o, e.getKey()))) {
-                    validatedObjects.put(o, false);
-                    return false;
-                }
+                annotationProcessor.validate((A) e.getValue(), getField(o, e.getKey()));
             }
             for (final Map.Entry<Field, AnnotationValidationTree> e : tree.getLeafs().entrySet()) {
                 final Field field = e.getKey();
                 final Object fieldValue = getField(o, field);
                 if (fieldValue != null) {
                     if (field.getGenericType() instanceof Class) {
-                        if (validateElement(e.getValue(), fieldValue, validatedObjects)) {
-                            validatedObjects.put(o, false);
-                            return false;
-                        }
+                        validateElement(e.getValue(), fieldValue, validatedObjects);
                     } else if (fieldValue instanceof Collection) {
-                        if (validateCollection((Collection) fieldValue, e.getValue(), validatedObjects)) {
-                            validatedObjects.put(o, false);
-                            return false;
-                        }
+                        validateCollection((Collection) fieldValue, e.getValue(), validatedObjects);
                     }
                 }
             }
-            return true;
         }
-        return validatedObjects.get(o);
     }
 
     private Object getField(final Object o, final Field field) {
@@ -66,19 +56,16 @@ public class AnnotationValidatorImpl<A extends Annotation, T> implements Annotat
         return ReflectionUtils.getField(field, o);
     }
 
-    private boolean validateElement(final AnnotationValidationTree tree,
-                                    final Object fieldValue,
-                                    final Map<Object, Boolean> validatedObjects) {
-        return !validateLeaf(fieldValue, tree, validatedObjects);
+    private void validateElement(final AnnotationValidationTree tree,
+                                 final Object fieldValue,
+                                 final Map<Object, Boolean> validatedObjects) throws AnnotationValidateException {
+        validateLeaf(fieldValue, tree, validatedObjects);
     }
 
-    private boolean validateCollection(final Collection o, final AnnotationValidationTree tree,
-                                       final Map<Object, Boolean> validatedObjects) {
+    private void validateCollection(final Collection o, final AnnotationValidationTree tree,
+                                    final Map<Object, Boolean> validatedObjects) throws AnnotationValidateException {
         for (final Object element : o) {
-            if (validateElement(tree, element, validatedObjects)) {
-                return true;
-            }
+            validateElement(tree, element, validatedObjects);
         }
-        return false;
     }
 }

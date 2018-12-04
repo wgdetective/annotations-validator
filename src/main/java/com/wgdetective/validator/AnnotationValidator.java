@@ -1,8 +1,10 @@
 package com.wgdetective.validator;
 
+import com.wgdetective.exception.AnnotationValidateException;
+
 /**
  * @author Wladimir Litvinov
  */
 public interface AnnotationValidator<T> {
-    boolean validate(final T o);
+    void validate(final T o) throws AnnotationValidateException;
 }
