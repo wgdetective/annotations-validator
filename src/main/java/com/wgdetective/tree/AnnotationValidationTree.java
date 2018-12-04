@@ -1,5 +1,6 @@
 package com.wgdetective.tree;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,18 +13,18 @@ import java.util.Map;
 public class AnnotationValidationTree<T> {
     private Class<T> clazz;
 
-    private final List<Field> validatedFields;
+    private final Map<Field, Annotation> validatedFields;
     private final Map<Field, AnnotationValidationTree> leafs;
 
     public AnnotationValidationTree(final Class<T> clazz) {
         this.clazz = clazz;
-        this.validatedFields = new ArrayList<>();
+        this.validatedFields = new HashMap<>();
         this.leafs = new HashMap<>();
 
     }
 
-    public void addForValidation(final Field field) {
-        validatedFields.add(field);
+    public void addForValidation(final Field field, final Annotation annotation) {
+        validatedFields.put(field, annotation);
     }
 
     public void add(final Field field, final AnnotationValidationTree<?> tree) {
@@ -47,7 +48,7 @@ public class AnnotationValidationTree<T> {
         return clazz;
     }
 
-    public List<Field> getValidatedFields() {
+    public Map<Field, Annotation> getValidatedFields() {
         return validatedFields;
     }
 

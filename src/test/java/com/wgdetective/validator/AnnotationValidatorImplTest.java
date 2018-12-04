@@ -6,6 +6,7 @@ import com.wgdetective.test.model.LeafModel;
 import com.wgdetective.test.model.LeafModel2;
 import com.wgdetective.test.model.RootModel;
 import com.wgdetective.test.model.RootModel2;
+import com.wgdetective.test.processor.CheckPrefixAnnotationProcessor;
 import com.wgdetective.test.processor.NotNullAnnotationProcessor;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,12 +23,16 @@ import static org.junit.Assert.assertTrue;
 public class AnnotationValidatorImplTest {
     private AnnotationValidator<RootModel> annotationValidator;
     private AnnotationValidator<RootModel2> root2annotationValidator;
+    private AnnotationValidator<RootModel> prefixAnnotationValidator;
 
     @Before
     public void init() {
         final AnnotationValidatorFactory factory = new AnnotationValidatorFactory();
-        annotationValidator = factory.create(RootModel.class, new NotNullAnnotationProcessor(), new MyPackageFilter());
-        root2annotationValidator = factory.create(RootModel2.class, new NotNullAnnotationProcessor(), new MyPackageFilter());
+        final MyPackageFilter packageFilter = new MyPackageFilter();
+        annotationValidator = factory.create(RootModel.class, new NotNullAnnotationProcessor(), packageFilter);
+        root2annotationValidator = factory.create(RootModel2.class, new NotNullAnnotationProcessor(), packageFilter);
+        prefixAnnotationValidator =
+            factory.create(RootModel.class, new CheckPrefixAnnotationProcessor(), packageFilter);
     }
 
     @Test
@@ -163,14 +168,25 @@ public class AnnotationValidatorImplTest {
     }
 
     @Test
-    public void cleanLeafsTrueFalse() {
+    public void cleanLeafsFalseTest() {
         final RootModel2 rootModel2 = new RootModel2();
         rootModel2.setId(1L);
         rootModel2.setLeaf(new LeafModel2(null));
         assertFalse(root2annotationValidator.validate(rootModel2));
     }
 
-    //list + sub + circle
+    @Test
+    public void checkPrefixTrueTest() {
+        final RootModel root = createRoot();
+        root.setName("pref_" + root.getName());
+        assertTrue(prefixAnnotationValidator.validate(root));
+    }
+
+    @Test
+    public void checkPrefixFalseest() {
+        final RootModel root = createRoot();
+        assertFalse(prefixAnnotationValidator.validate(root));
+    }
 
     private RootModel createRoot() {
         final RootModel root = new RootModel();

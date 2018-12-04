@@ -9,6 +9,7 @@ import java.util.List;
 public class RootModel {
     @NotNull
     private Long id;
+    @CheckPrefix(prefix = "pref_")
     private String name;
     private LeafModel leaf;
     private List<LeafModel> leafs;

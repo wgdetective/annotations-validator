@@ -33,8 +33,8 @@ public class AnnotationValidatorImpl<A extends Annotation, T> implements Annotat
                                  final Map<Object, Boolean> validatedObjects) {
         if (!validatedObjects.containsKey(o)) {
             validatedObjects.put(o, true);
-            for (final Field field : tree.getValidatedFields()) {
-                if (!annotationProcessor.validate(getField(o, field))) {
+            for (final Map.Entry<Field, Annotation> e : tree.getValidatedFields().entrySet()) {
+                if (!annotationProcessor.validate((A) e.getValue(), getField(o, e.getKey()))) {
                     validatedObjects.put(o, false);
                     return false;
                 }

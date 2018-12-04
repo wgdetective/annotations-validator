@@ -8,5 +8,5 @@ import java.lang.annotation.Annotation;
 public interface AnnotationProcessor<A extends Annotation> {
     Class<A> getAnnotation();
     boolean filter(final A annotation);
-    boolean validate(final Object o);
+    boolean validate(final A annotation, final Object o);
 }
